@@ -1,16 +1,20 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import AuthContent from "../components/Auth/AuthContent";
 import { login } from "../util/auth";
 import LoadingOverlay from "../components/ui/LoadingOverlay";
 import { Alert } from "react-native";
+import { AuthContext } from "../store/auth-context";
 
 function LoginScreen() {
   const [isLoading, setIsLoading] = useState(false);
 
+  const authCtx = useContext(AuthContext);
+
   async function loginHandler(userData) {
     setIsLoading(true);
     try {
-      await login(userData);
+      const token = await login(userData);
+      authCtx.authenticate(token);
     } catch (error) {
       Alert.alert("Authentication Failed", error.message);
     }
