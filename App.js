@@ -7,8 +7,14 @@ import SignupScreen from "./screens/SignupScreen";
 import WelcomeScreen from "./screens/WelcomeScreen";
 import { Colors } from "./constants/styles";
 import AuthContextProvider, { AuthContext } from "./store/auth-context";
-import { useContext } from "react";
+import { useContext, useEffect, useState } from "react";
 import IconButton from "./components/ui/IconButton";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as SplashScreen from "expo-splash-screen";
+// import AppLoading from "expo-app-loading";
+
+// Keep the splash screen visible while we fetch resources
+SplashScreen.preventAutoHideAsync();
 
 const Stack = createNativeStackNavigator();
 
@@ -25,6 +31,30 @@ function AuthStack() {
       <Stack.Screen name="Signup" component={SignupScreen} />
     </Stack.Navigator>
   );
+}
+
+function Root() {
+  // const [isLoading, setIsLoading] = useState(true);
+
+  const authCtx = useContext(AuthContext);
+
+  useEffect(() => {
+    async function fetchToken() {
+      const token = await AsyncStorage.getItem("token");
+      if (token) {
+        authCtx.authenticate(token);
+      }
+      // setIsLoading(false);
+      setTimeout(async () => {
+        await SplashScreen.hideAsync();
+      }, 500);
+    }
+
+    fetchToken();
+  }, []);
+
+  // if (isLoading) return <AppLoading />;
+  return <Navigation />;
 }
 
 function AuthenticatedStack() {
@@ -72,7 +102,7 @@ export default function App() {
     <>
       <StatusBar style="light" />
       <AuthContextProvider>
-        <Navigation />
+        <Root />
       </AuthContextProvider>
     </>
   );
